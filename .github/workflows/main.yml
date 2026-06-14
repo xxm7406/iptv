@@ -1,0 +1,30 @@
+name: Sync Fork with Upstream
+
+on:
+  schedule:
+    # 每6小时自动同步一次（防止触发太频繁）
+    - cron: '*/30 * * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Add upstream repository
+        run: |
+          git remote add upstream https://github.com/iptv-org/iptv.git
+          git fetch upstream
+
+      - name: Merge upstream changes
+        run: |
+          git checkout master
+          git merge upstream/master --allow-unrelated-histories || true
+
+      - name: Push changes to fork
+        run: git push origin main
